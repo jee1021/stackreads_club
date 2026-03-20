@@ -20,7 +20,6 @@ class SignupUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, username, password=None, **extra_fields):
-        # 잘못된 값 들어오면 예외 발생
         if extra_fields.get('is_staff') is False:
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is False:
@@ -50,17 +49,20 @@ class SignupUser(AbstractBaseUser, PermissionsMixin):
         unique=True
     )
 
+    nickname = models.CharField(
+        max_length=20,
+        blank=True,
+    )
+
     phone = models.CharField(
         max_length=20,
         blank=True,
         null=True
     )
-
-    age = models.PositiveIntegerField(
+    birth_date = models.DateField(
+        null=True,
         blank=True,
-        null=True
     )
-
     status = models.CharField(
         max_length=10,
         choices=Status.choices,
