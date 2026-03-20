@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 
 
-# ✅ 1. 커스텀 매니저
 class SignupUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
         if not email:
@@ -21,12 +20,17 @@ class SignupUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, username, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
+        # 잘못된 값 들어오면 예외 발생
+        if extra_fields.get('is_staff') is False:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is False:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        extra_fields['is_staff'] = True
+        extra_fields['is_superuser'] = True
+        extra_fields['is_active'] = True
 
         return self.create_user(email, username, password, **extra_fields)
-
 
 class SignupUser(AbstractBaseUser, PermissionsMixin):
 
@@ -66,14 +70,12 @@ class SignupUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
-    # 🔥 실무에서 중요
     last_login = models.DateTimeField(blank=True, null=True)
     date_joined = models.DateTimeField(default=timezone.now)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # 🔑 인증 필드
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
